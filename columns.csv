@@ -11,7 +11,7 @@ elon,"decimal(10,7)",deg,no,"Ecliptic longitude (see expsup/sec2_1a.html for cau
 elat,"decimal(9,7)",deg,no,"Ecliptic latitude (see expsup/sec2_1a.html for caution)"
 wx,"decimal(7,3)",pix,yes,"The x-pixel coordinate of this source"
 wy,"decimal(7,3)",pix,yes,"The y-pixel coordinate of this source"
-cntr,"serial8",----,no,"Unique ID number for this object (see expsup/sec2_1a.html)""
+cntr,"serial8",----,no,"Unique ID number for this object (see expsup/sec2_1a.html)"
 source_id,"char(28)",----,no,"Unique source ID (see expsup/sec2_1a.html)"
 coadd_id,"char(20)",----,no,"Atlas Tile identifier (see expsup/sec2_1a.html)"
 src,integer,----,no,"Sequential number of the source extraction"
