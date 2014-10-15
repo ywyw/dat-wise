@@ -81,7 +81,7 @@ w3cc_map,integer,----,yes,"W3 contamination and confusion map (see expsup/sec2_1
 w3cc_map_str,"char(9)",----,yes,"W3 contamination and confusion string (see expsup/sec2_1a.html)"
 w4cc_map,integer,----,yes,"W4 contamination and confusion map (see expsup/sec2_1a.html)"
 w4cc_map_str,"char(9)",----,yes,"W4 contamination and confusion string (see expsup/sec2_1a.html)"
-best_use_cntr,"int8,----,yes,"Cntr identification value of the source extraction"
+best_use_cntr,"int8",----,yes,"Cntr identification value of the source extraction"
 ngrp,smallint,----,yes,"Excess number of positionally associated duplicate resolution groups"
 w1flux,smallfloat,dn,yes,"Raw W1 source flux in units of digital numbers (DN)"
 w1sigflux,smallfloat,dn,yes,"Uncertainty in the \"raw\" W1 source flux measurement (DN)"
