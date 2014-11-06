@@ -19,3 +19,14 @@ python healpixdb.py "Y" "tempdb"
 
 # POSTGRES schema: nside | npix | ipix | filename
 This should insert all the healpixels into a POSTGRES database of your naming and print them out.
+
+# Demo for ra/dec to healpix geohash:
+import numpy
+import healpy
+m = numpy.arange(healpy.nside2npix(4))
+healpy.mollview(m, nest=True, title="Mollview image NESTED")
+nside = 4
+(theta,phi) = radec2polar(60,-1.25)
+ipix = polar2healpix(theta,phi,nside)
+(binnum, remainder) = ipix2tuple(ipix,nside)
+print tuple2hash(binnum,remainder)
