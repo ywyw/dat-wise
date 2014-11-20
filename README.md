@@ -30,3 +30,7 @@ nside = 4 <br>
 ipix = polar2healpix(theta,phi,nside) <br>
 (binnum, remainder) = ipix2tuple(ipix,nside) <br>
 print tuple2hash(binnum,remainder)
+bounds = healpy.boundaries(1,0,nest=True,step=1)
+vectranspose = bounds.T
+numpy.array(healpy.vec2ang(vectranspose))
+map(polar2radec, numpy.array(healpy.vec2ang(vectranspose)).T)
