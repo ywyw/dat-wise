@@ -10,9 +10,7 @@ def cart2polar(x,y,z):
 def polar2cart(theta,phi):
     return (healpy.ang2vec(theta,phi))
 
-# for polar to cartesian, use healpy.vec2ang and ang2vec
 # healpy.get_neighbors() for 4 nn, get_all for 8
-# ud_grade up/downgrade resolution of map
 
 def radec2polar(ra,dec):
     theta = (90-dec)*math.pi/180
@@ -38,6 +36,11 @@ def tuple2hash(binnum,remainder):
     
 # hex(binnum) concat hex(remainder): eg: 0123456789ab+0123456789abcdef: (10,15) -> af
 # next: how to find the right healpix for a given resolution with a hash
+def hash2tuple():
+    # write the reverse function
+
+def tuple2ipix(binnum,remainder,nside):
+    # write the reverse function
 
 # checking if a query is "valid" # note: can handle wraparound later
 def isvalidbboxquery(ramin,decmin,ramax,decmax):
@@ -49,11 +52,10 @@ def isvalidbboxquery(ramin,decmin,ramax,decmax):
         return False
     return True
     
-# find all the corners of the bounding box, npix = 12
+# find all the corners of the healpix bounding box, npix = 12
 def bboxcorners(ramin,decmin,ramax,decmax):
     bounds = healpy.boundaries(1,0,nest=True,step=1)
     vectranspose = bounds.T
-    numpy.array(healpy.vec2ang(vectranspose))
     result = map(polar2radec, numpy.array(healpy.vec2ang(vectranspose))[0],numpy.array(healpy.vec2ang(vectranspose))[1])
     return result
 
@@ -65,11 +67,17 @@ def query(ramin,decmin,ramax,decmax):
     else:
         print "not a valid bbox"
 
-# healpix completely contained in bbox
+# healpix completely contained in bbox, don't divide further
 def insidebbox(ramin,decmin,ramax,decmax,corners):
     for corner in corners:
         if (ramin <= corner.ra <= ramax and decmin <= corner.dec <= decmax):
-            return Ture
+            return True
         else:
             return False
             
+
+def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
+    # if bbox corner in pixel return true    
+    # calculate midlines
+    # if bbox intersect midlines return true
+    return False
