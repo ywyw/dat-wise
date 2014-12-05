@@ -10,8 +10,6 @@ def cart2polar(x,y,z):
 def polar2cart(theta,phi):
     return (healpy.ang2vec(theta,phi))
 
-# healpy.get_neighbors() for 4 nn, get_all for 8
-
 def radec2polar(ra,dec):
     theta = (90-dec)*math.pi/180
     phi = ra*math.pi/180 
@@ -85,8 +83,11 @@ def insidebbox(ramin,decmin,ramax,decmax,corners):
         else:
             return False
             
+# test if the center of healpix is in a bbox
 def centerinbbox(ramin,decmin,ramax,decmax,ipix,nside):
-    # test if the center of healpix is in a bbox
+    (racenter,deccenter) = healpix2radec(ipix,nside)
+    if (ramin <= racenter <= ramax and decmin <= deccenter <= decmax):
+        return True
     return False
     
     
@@ -97,7 +98,7 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
             if (radec2healpix(i,j,nside) == ipix):
                 return True
     # if center in bbox return true
-    if (centerinbbox()):
+    if (centerinbbox(ramin,decmin,ramax,decmax,ipix,nside)):
         return True
     # calculate midlines
     
