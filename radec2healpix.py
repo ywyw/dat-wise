@@ -38,8 +38,8 @@ def radec2healpix(ra,dec,nside):
     return polar2healpix(theta,phi,nside)
     
 def healpix2radec(ipix,nside):
-    (theta,phi) = healpy.ang2pix(nside,ipix)
-    return polar2radec(theta,phi,nside)    
+    (theta,phi) = healpy.pix2ang(nside,ipix)
+    return polar2radec(theta,phi)    
     
 # hex(binnum) concat hex(remainder): eg: 0123456789ab+0123456789abcdef: (10,15) -> af
 # next: how to find the right healpix for a given resolution with a hash
@@ -51,7 +51,7 @@ def tuple2ipix(binnum,remainder,nside):
 
 # checking if a query is "valid" # note: can handle wraparound later
 def isvalidbboxquery(ramin,decmin,ramax,decmax):
-    if not (0 <= ramin <=360) or not (0 <= ramin <=360):
+    if not (-180 <= ramin <= 180) or not (-180 <= ramax <= 180):
         return False
     if not (-90 <= decmin <= 90) or not (-90 <= decmax <= 90):
         return False
@@ -59,9 +59,9 @@ def isvalidbboxquery(ramin,decmin,ramax,decmax):
         return False
     return True
     
-# find all the corners of the healpix bounding box, npix = 12
-def bboxcorners(ramin,decmin,ramax,decmax):
-    bounds = healpy.boundaries(1,0,nest=True,step=1)
+# find all the corners of the healpix, tuples of (ra,dec)
+def bboxcorners(ipix,nside):
+    bounds = healpy.boundaries(nside,ipix,nest=True,step=1)
     vectranspose = bounds.T
     result = map(polar2radec, numpy.array(healpy.vec2ang(vectranspose))[0],numpy.array(healpy.vec2ang(vectranspose))[1])
     return result
@@ -75,7 +75,7 @@ def query(ramin,decmin,ramax,decmax):
         print "not a valid bbox"
 
 # healpix completely contained in bbox, don't divide further
-def insidebbox(ramin,decmin,ramax,decmax,corners):
+def healpixinsidebbox(ramin,decmin,ramax,decmax,corners):
     for corner in corners:
         #print corner
         if (ramin <= corner[0] <= ramax and decmin <= corner[1] <= decmax):
@@ -100,12 +100,26 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     # if center in bbox return true
     if (centerinbbox(ramin,decmin,ramax,decmax,ipix,nside)):
         return True
-    # calculate midlines
-    
+    # next test healpix corners
+    corners = bboxcorners(ipix,nside)
+    for corner in corners:
+        (ra,dec) = corner
+        if (ra < 0):
+            ra = ra + 360
+        if (ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec)):
+            return True
+    # calculate midlines for more tricky intersect
+    # corners in ccw order? so lines are (0,2) and (1,3)
+    # use library defined function to test intersect between line and bbox
     # if bbox intersect midlines return true
     return False
     
-# query function: draw bbox, standard resolution, return set intersecting
+def ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec):
+    if (ramin <= ra <= ramax and decmin <= dec <= decmax):
+        return True
+    return False
+    
+# query function: draw bbox, default min resolution, return set intersecting
 def simplequery(ramin,decmin,ramax,decmax,nside=1):
     intersecting = []
     pixels = healpy.nside2npix(nside)
