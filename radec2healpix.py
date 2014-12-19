@@ -109,9 +109,51 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
         if (ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec)):
             return True
     # calculate midlines for more tricky intersect
-    # corners in ccw order? so lines are (0,2) and (1,3)
-    # use library defined function to test intersect between line and bbox
-    # if bbox intersect midlines return true
+    # corners in cw order, starting from the top, so vert (0,2) and horiz (1,3)
+    if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[0],corners[2]))):
+        return True
+    if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[1],corners[3]))):
+        return True
+    return False
+    
+def bboxintersectline(ramin,decmin,ramax,decmax,line):
+    # test to see if two line segments intersect on each edge of bbox
+    bboxedges = [((ramin,decmin),(ramin,decmax)),((ramin,decmin),(ramax,decmin)),
+    ((ramax,decmax),(ramax,decmin)),((ramax,decmax),(ramin,decmax))]
+    for edge in bboxedges:
+        if lineintersectline(edge,line):
+            return True
+    return False
+
+# expects each line to be a tuple of tuples:
+# (p1,p2) -> where p1 is (x1,y1), p2 is (x2,y2)
+# if intersecting, x,y that solves both eqns
+# parametrize by x = x1 + t * (x2 - x1), 0 <= t <= 1
+
+def lineintersectline(line1,line2):
+    print "line 1:"
+    print line1
+    print "line 2:"
+    print line2
+    ((x1, y1), (x2, y2)) = line1
+    ((x3, y3), (x4, y4)) = line2
+    numerator1 = (x1 - x3) * (y4 - y3) - (y1 - y3) * (x4 - x3)
+    numerator2 = (x1 - x3) * (y2 - y1) - (y1 - y3) * (x2 - x1)
+    denominator = (y2 - y1) * (x4 - x3) - (x2 - x1) * (y4 - y3)
+    # either parallel or collinear
+    if (denominator == 0):
+        # collinear if num is zero
+        if (numerator1 == 0):
+            # if either endpoint of the first line is within the second segment
+            # we don't need to check both x,y since the segments are collinear
+            if(x3 <= x1 <= x4 or x3 <= x2 <= x4):
+                return True
+            else:
+                return False
+        else:
+            return False
+    if (0 <= numerator1/denominator <= 1 and 0 <= numerator2/denominator <= 1):
+        return True
     return False
     
 def ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec):
@@ -128,6 +170,11 @@ def simplequery(ramin,decmin,ramax,decmax,nside=1):
     else:
         print "invalid query"
     for ipix in range(pixels):
+        print "now testing pixel number:" + str(ipix)
         if (bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside)):
             intersecting.append(ipix)
     return intersecting
+    
+# example of a tricky query:
+# simplequery(-65,5,90,15) -> [5,7]
+# should also return 0,3,4
