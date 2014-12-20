@@ -48,6 +48,8 @@ def hash2tuple():
 
 def tuple2ipix(binnum,remainder,nside):
     # write the reverse function
+    
+# function for finding the resolution of
 
 # checking if a query is "valid" # note: can handle wraparound later
 def isvalidbboxquery(ramin,decmin,ramax,decmax):
@@ -90,7 +92,8 @@ def centerinbbox(ramin,decmin,ramax,decmax,ipix,nside):
         return True
     return False
     
-    
+# this is an algorithm that computes with absolute certainty if healpix and a
+# rectangular bbox intersect, using some clever geometric reasoning
 def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     # if bbox corner in pixel return true
     for i in (ramin,ramax):
@@ -102,19 +105,26 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
         return True
     # next test healpix corners
     corners = bboxcorners(ipix,nside)
+    print corners
+    corners = map(radec2latlong, corners)
+    print corners
     for corner in corners:
         (ra,dec) = corner
-        if (ra < 0):
-            ra = ra + 360
         if (ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec)):
             return True
-    # calculate midlines for more tricky intersect
+    # calculate diagonals for more tricky intersect
     # corners in cw order, starting from the top, so vert (0,2) and horiz (1,3)
     if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[0],corners[2]))):
         return True
     if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[1],corners[3]))):
         return True
     return False
+    
+def radec2latlong(radecpair):
+    (ra,dec) = radecpair
+    if (ra > 180):
+        ra = ra - 360
+    return (ra,dec)
     
 def bboxintersectline(ramin,decmin,ramax,decmax,line):
     # test to see if two line segments intersect on each edge of bbox
@@ -161,7 +171,8 @@ def ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec):
         return True
     return False
     
-# query function: draw bbox, default min resolution, return set intersecting
+# simple query function: draw bbox, default min resolution, return set intersecting
+# example of a tricky query now working: simplequery(-65,5,90,15) -> [0,3,4,5,7]
 def simplequery(ramin,decmin,ramax,decmax,nside=1):
     intersecting = []
     pixels = healpy.nside2npix(nside)
@@ -175,6 +186,11 @@ def simplequery(ramin,decmin,ramax,decmax,nside=1):
             intersecting.append(ipix)
     return intersecting
     
-# example of a tricky query:
-# simplequery(-65,5,90,15) -> [5,7]
-# should also return 0,3,4
+# recursive function that selects healpix of finer resolutions until minimum
+# fullquery(-65,5,90,15,2,[],[])
+def fullquery(ramin,decmin,ramax,decmax,nsidemin,intersecting,dividenomre):
+    intersecting = []
+    # start with 12 pixels, nside =1
+    # for each pixel put in list intersecting or dividenomore
+    # if pixel can't be divided: intersecting.remove(ipix), dividenomore.append(ipix)
+    return intersecting
