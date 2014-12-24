@@ -135,10 +135,8 @@ def bboxintersectline(ramin,decmin,ramax,decmax,line):
             return True
     return False
 
-# expects each line to be a tuple of tuples:
-# (p1,p2) -> where p1 is (x1,y1), p2 is (x2,y2)
-# if intersecting, x,y that solves both eqns
-# parametrize by x = x1 + t * (x2 - x1), 0 <= t <= 1
+# expects each line to be a tuple of tuples: (p1,p2) -> where p1 is (x1,y1), p2 is (x2,y2)
+# if intersecting, x,y that solves both eqns, parametrize by x = x1 + t * (x2 - x1), 0 <= t <= 1
 
 def lineintersectline(line1,line2):
     print "line 1:"
