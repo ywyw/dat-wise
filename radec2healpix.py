@@ -3,6 +3,7 @@
 import healpy
 import math
 import fitsio
+import numpy
 
 def cart2polar(x,y,z):
     return (healpy.vec2ang(x,y,z))
@@ -105,9 +106,7 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
         return True
     # next test healpix corners
     corners = bboxcorners(ipix,nside)
-    print corners
     corners = map(radec2latlong, corners)
-    print corners
     for corner in corners:
         (ra,dec) = corner
         if (ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec)):
@@ -139,10 +138,6 @@ def bboxintersectline(ramin,decmin,ramax,decmax,line):
 # if intersecting, x,y that solves both eqns, parametrize by x = x1 + t * (x2 - x1), 0 <= t <= 1
 
 def lineintersectline(line1,line2):
-    print "line 1:"
-    print line1
-    print "line 2:"
-    print line2
     ((x1, y1), (x2, y2)) = line1
     ((x3, y3), (x4, y4)) = line2
     numerator1 = (x1 - x3) * (y4 - y3) - (y1 - y3) * (x4 - x3)
@@ -179,16 +174,52 @@ def simplequery(ramin,decmin,ramax,decmax,nside=1):
     else:
         print "invalid query"
     for ipix in range(pixels):
-        print "now testing pixel number:" + str(ipix)
         if (bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside)):
             intersecting.append(ipix)
     return intersecting
     
 # recursive function that selects healpix of finer resolutions until minimum
-# fullquery(-65,5,90,15,2,[],[])
-def fullquery(ramin,decmin,ramax,decmax,nsidemin,intersecting,dividenomre):
-    intersecting = []
-    # start with 12 pixels, nside =1
+# fullquerywrap(-65,5,90,15,2)
+def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
+    intersecting = simplequery(ramin,decmin,ramax,decmax) # start with 12 pixels, nside =1
+    dividenomore = []
     # for each pixel put in list intersecting or dividenomore
-    # if pixel can't be divided: intersecting.remove(ipix), dividenomore.append(ipix)
-    return intersecting
+    for pixel in intersecting:
+        corners = bboxcorners(pixel,1)
+        if (healpixinsidebbox(ramin,decmin,ramax,decmax,corners)):
+            intersecting.remove(pixel)
+            dividenomore.append(ipix)
+    print intersecting
+    print dividenomore
+    return fullquery(ramin,decmin,ramax,decmax,nsidemin,1,intersecting,dividenomore)
+    
+# meat of the recursion
+def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore):
+    print intersecting
+    print dividenomore
+    print nsidecur
+    if (nsidecur == nsidemin):
+        return intersecting + dividenomore
+    else:
+        nsidecur = nsidecur + 1
+        # for every pixel in intersecting, divide into 4 and test each one
+        for pixel in intersecting:
+            pixelchildren = getchildren(pixel,nsidecur)
+            for child in pixelchildren:
+                if healpixinsidebbox(ramin,decmin,ramax,decmax,bboxcorners(pixel,nsidecur)):
+                    dividenomore.append(child)
+                else:
+                    intersecting.append(child)
+            intersecting.remove(pixel) # delete the pixel after it's divided
+        return fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore)
+
+
+# assumes the notation is ring, not nested
+def getchildren(ipix,nside):
+    ipixnest = healpy.ring2nest(ipix,nside)
+    # do some interesting modulus math
+    result = []
+    children = healpy.nest2ring(result,nside+1)
+    return (children)
+    
+    
