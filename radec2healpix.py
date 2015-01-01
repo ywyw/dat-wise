@@ -99,10 +99,13 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     # if bbox corner in pixel return true
     for i in (ramin,ramax):
         for j in (decmin,decmax):
-            if (radec2healpix(i,j,nside) == ipix):
+            (lat, lon) = latlon2radec((i,j))
+            if (radec2healpix(lat,lon,nside) == ipix):
+                print "bbox corner in pixel",i,j,ipix
                 return True
     # if center in bbox return true
     if (centerinbbox(ramin,decmin,ramax,decmax,ipix,nside)):
+        print "center in bbox"
         return True
     # next test healpix corners
     corners = bboxcorners(ipix,nside)
@@ -110,12 +113,15 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     for corner in corners:
         (ra,dec) = corner
         if (ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec)):
+            print "corner in bbox"
             return True
     # calculate diagonals for more tricky intersect
     # corners in cw order, starting from the top, so vert (0,2) and horiz (1,3)
     if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[0],corners[2]))):
+        print "complex intersect"
         return True
     if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[1],corners[3]))):
+        print "complex intersect"
         return True
     return False
     
@@ -124,6 +130,12 @@ def radec2latlong(radecpair):
     if (ra > 180):
         ra = ra - 360
     return (ra,dec)
+
+def latlon2radec(latlonpair):
+    (lat, lon) = latlonpair
+    if (lon < 0):
+        lon = lon + 360
+    return (lat, lon)
     
 def bboxintersectline(ramin,decmin,ramax,decmax,line):
     # test to see if two line segments intersect on each edge of bbox
@@ -193,7 +205,10 @@ def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
     print dividenomore
     return fullquery(ramin,decmin,ramax,decmax,nsidemin,1,intersecting,dividenomore)
     
-# meat of the recursion
+# meat of the recursion, we need to specify what resolution each ipix has
+# fullquerywrap(-65,5,90,15,2)
+# expect for nsidemin = 2: [0, 12, 14, 17, 18, 19, 20, 22, 23], [0, 12, 17, 18, 19, 20, 23, 29]
+# expect for nsidemin = 3: 
 def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore):
     print intersecting
     print dividenomore
@@ -201,25 +216,40 @@ def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenom
     if (nsidecur == nsidemin):
         return intersecting + dividenomore
     else:
-        nsidecur = nsidecur + 1
+        nsidecur += 1
         # for every pixel in intersecting, divide into 4 and test each one
+        addon = []
+        todelete = []
         for pixel in intersecting:
-            pixelchildren = getchildren(pixel,nsidecur)
+            print "intersecting: ",intersecting
+            pixelchildren = getchildrennest(pixel,nsidecur)
             for child in pixelchildren:
-                if healpixinsidebbox(ramin,decmin,ramax,decmax,bboxcorners(pixel,nsidecur)):
+                print "parent pixel #", pixel, " child #", child
+                if healpixinsidebbox(ramin,decmin,ramax,decmax,bboxcorners(child,nsidecur)):
+                    print "this will not divide further"
                     dividenomore.append(child)
                 else:
-                    intersecting.append(child)
-            intersecting.remove(pixel) # delete the pixel after it's divided
+                    if bboxpixintersect(ramin,decmin,ramax,decmax,child,nsidecur):
+                        print "adding child", child
+                        print "corners for child are:", map(radec2latlong,bboxcorners(child,nsidecur))
+                        addon.append(child)
+            print "going to remove ", pixel
+            todelete.append(pixel)
+        intersecting = intersecting + addon
+        for pixel in todelete:
+            intersecting.remove(pixel)
         return fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore)
 
 
 # assumes the notation is ring, not nested
 def getchildren(ipix,nside):
     ipixnest = healpy.ring2nest(ipix,nside)
-    # do some interesting modulus math
-    result = []
-    children = healpy.nest2ring(result,nside+1)
-    return (children)
+    # regardless of resolution the next children are always the same
+    # 4 * ipix + 0,1,2,3
+    children = [ipixnest*4, ipixnest*4+1, ipixnest*4+2, ipixnest*4+3]
+    return children
     
-    
+# assumes the notation is nested
+def getchildrennest(ipix,nside):
+    children = [ipix*4, ipix*4+1, ipix*4+2, ipix*4+3]
+    return children
