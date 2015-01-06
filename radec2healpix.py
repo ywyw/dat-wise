@@ -36,7 +36,8 @@ def tuple2hash(binnum,remainder):
 # ra/dec to healpix one function
 def radec2healpix(ra,dec,nside):
     (theta,phi) = radec2polar(ra,dec)
-    return polar2healpix(theta,phi,nside)
+    healpixring = polar2healpix(theta,phi,nside)
+    return healpy.ring2nest(nside,healpixring)
     
 def healpix2radec(ipix,nside):
     (theta,phi) = healpy.pix2ang(nside,ipix)
@@ -99,8 +100,7 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     # if bbox corner in pixel return true
     for i in (ramin,ramax):
         for j in (decmin,decmax):
-            (lat, lon) = latlon2radec((i,j))
-            if (radec2healpix(lat,lon,nside) == ipix):
+            if (radec2healpix(i,j,nside) == ipix):
                 print "bbox corner in pixel",i,j,ipix
                 return True
     # if center in bbox return true
@@ -207,8 +207,8 @@ def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
     
 # meat of the recursion, we need to specify what resolution each ipix has
 # fullquerywrap(-65,5,90,15,2)
-# expect for nsidemin = 2: [0, 12, 14, 17, 18, 19, 20, 22, 23], [0, 12, 17, 18, 19, 20, 23, 29]
-# expect for nsidemin = 3: 
+# expect nsidemin = 2: [0, 12, 17, 18, 19, 20, 23, 29]
+# expect nsidemin = 3: [0, 1, 2, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 80, 83, 91, 92, 94, 95, 117, 119, 69, 70, 89, 90]
 def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore):
     print intersecting
     print dividenomore
@@ -216,7 +216,7 @@ def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenom
     if (nsidecur == nsidemin):
         return intersecting + dividenomore
     else:
-        nsidecur += 1
+        nsidecur *= 2
         # for every pixel in intersecting, divide into 4 and test each one
         addon = []
         todelete = []
@@ -244,8 +244,7 @@ def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenom
 # assumes the notation is ring, not nested
 def getchildren(ipix,nside):
     ipixnest = healpy.ring2nest(ipix,nside)
-    # regardless of resolution the next children are always the same
-    # 4 * ipix + 0,1,2,3
+    # regardless of resolution the next children are always the same: 4 * ipix + 0,1,2,3
     children = [ipixnest*4, ipixnest*4+1, ipixnest*4+2, ipixnest*4+3]
     return children
     
