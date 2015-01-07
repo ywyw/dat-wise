@@ -34,3 +34,14 @@ bounds = healpy.boundaries(1,0,nest=True,step=1)
 vectranspose = bounds.T
 numpy.array(healpy.vec2ang(vectranspose))
 map(polar2radec, numpy.array(healpy.vec2ang(vectranspose)).T)
+
+For a bbox query of npix = 12 resolution:
+simplequery(ramin,decmin,ramax,decmax)
+
+For a query returning minimum resolution healpix:
+fullquerywrap(ramin,decmin,ramax,decmax,nsidemin)
+
+WIP: verify radec2healpix queries for nside > 2
+WIP: hashing for queries
+WIP: reverse functions
+WIP: latlong vs radec

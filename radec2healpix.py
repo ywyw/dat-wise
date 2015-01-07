@@ -208,7 +208,7 @@ def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
 # meat of the recursion, we need to specify what resolution each ipix has
 # fullquerywrap(-65,5,90,15,2)
 # expect nsidemin = 2: [0, 12, 17, 18, 19, 20, 23, 29]
-# expect nsidemin = 3: [0, 1, 2, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 80, 83, 91, 92, 94, 95, 117, 119, 69, 70, 89, 90]
+# expect nsidemin = 4: [0, 1, 2, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 80, 83, 91, 92, 94, 95, 117, 119, 69, 70, 89, 90]
 def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore):
     print intersecting
     print dividenomore
