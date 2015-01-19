@@ -40,6 +40,7 @@ def radec2healpix(ra,dec,nside):
     return healpy.ring2nest(nside,healpixring)
     
 def healpix2radec(ipix,nside):
+    ipix = healpy.nest2ring(nside,ipix)
     (theta,phi) = healpy.pix2ang(nside,ipix)
     return polar2radec(theta,phi)    
     
@@ -65,7 +66,7 @@ def isvalidbboxquery(ramin,decmin,ramax,decmax):
     
 # find all the corners of the healpix, tuples of (ra,dec)
 def bboxcorners(ipix,nside):
-    bounds = healpy.boundaries(nside,ipix,nest=True,step=1)
+    bounds = healpy.boundaries(nside,ipix,step=1,nest=True)
     vectranspose = bounds.T
     result = map(polar2radec, numpy.array(healpy.vec2ang(vectranspose))[0],numpy.array(healpy.vec2ang(vectranspose))[1])
     return result
@@ -90,7 +91,12 @@ def healpixinsidebbox(ramin,decmin,ramax,decmax,corners):
 # test if the center of healpix is in a bbox
 def centerinbbox(ramin,decmin,ramax,decmax,ipix,nside):
     (racenter,deccenter) = healpix2radec(ipix,nside)
-    if (ramin <= racenter <= ramax and decmin <= deccenter <= decmax):
+    print racenter, deccenter
+    (lat, lon) = radec2latlong((racenter,deccenter))
+    print lat, lon
+    print ramin, ramax
+    print decmin, decmax
+    if (ramin <= lat <= ramax and decmin <= lon <= decmax):
         return True
     return False
     
@@ -110,6 +116,7 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     # next test healpix corners
     corners = bboxcorners(ipix,nside)
     corners = map(radec2latlong, corners)
+    print corners
     for corner in corners:
         (ra,dec) = corner
         if (ptinsidebbox(ramin,decmin,ramax,decmax,ra,dec)):
@@ -119,9 +126,11 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     # corners in cw order, starting from the top, so vert (0,2) and horiz (1,3)
     if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[0],corners[2]))):
         print "complex intersect"
+        print corners[0], corners[2]
         return True
     if (bboxintersectline(ramin,decmin,ramax,decmax,(corners[1],corners[3]))):
         print "complex intersect"
+        print corners[1], corners[3]
         return True
     return False
     
@@ -143,6 +152,9 @@ def bboxintersectline(ramin,decmin,ramax,decmax,line):
     ((ramax,decmax),(ramax,decmin)),((ramax,decmax),(ramin,decmax))]
     for edge in bboxedges:
         if lineintersectline(edge,line):
+            print "line/edge intersect"
+            print edge
+            print line
             return True
     return False
 
@@ -160,7 +172,7 @@ def lineintersectline(line1,line2):
         # collinear if num is zero
         if (numerator1 == 0):
             # if either endpoint of the first line is within the second segment
-            # we don't need to check both x,y since the segments are collinear
+            # we need to check both x,y since lines could be vertical or horizontal
             if(x3 <= x1 <= x4 or x3 <= x2 <= x4):
                 return True
             else:
@@ -209,6 +221,8 @@ def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
 # fullquerywrap(-65,5,90,15,2)
 # expect nsidemin = 2: [0, 12, 17, 18, 19, 20, 23, 29]
 # expect nsidemin = 4: [0, 1, 2, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 80, 83, 91, 92, 94, 95, 117, 119, 69, 70, 89, 90]
+#                      [0, 1, 2, 48, 49, 50, 71, 73, 74, 75, 76, 77, 78, 80, 83, 91, 92, 94, 95, 117, 119, 69, 70, 89, 90]
+# actual: 119,117,48,49,50,73,74,75,76,77,78,69,70,71,0,1,2,89,90,91,92,94 (80,83,95)
 def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore):
     print intersecting
     print dividenomore
