@@ -41,7 +41,7 @@ simplequery(ramin,decmin,ramax,decmax)
 For a query returning minimum resolution healpix:
 fullquerywrap(ramin,decmin,ramax,decmax,nsidemin)
 
-WIP: verify radec2healpix queries for nside > 2
 WIP: hashing for queries
 WIP: reverse functions
+WIP: display resolution along with ipix
 WIP: latlong vs radec

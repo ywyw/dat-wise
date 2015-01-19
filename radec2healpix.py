@@ -152,15 +152,11 @@ def bboxintersectline(ramin,decmin,ramax,decmax,line):
     ((ramax,decmax),(ramax,decmin)),((ramax,decmax),(ramin,decmax))]
     for edge in bboxedges:
         if lineintersectline(edge,line):
-            print "line/edge intersect"
-            print edge
-            print line
             return True
     return False
 
 # expects each line to be a tuple of tuples: (p1,p2) -> where p1 is (x1,y1), p2 is (x2,y2)
 # if intersecting, x,y that solves both eqns, parametrize by x = x1 + t * (x2 - x1), 0 <= t <= 1
-
 def lineintersectline(line1,line2):
     ((x1, y1), (x2, y2)) = line1
     ((x3, y3), (x4, y4)) = line2
@@ -173,7 +169,7 @@ def lineintersectline(line1,line2):
         if (numerator1 == 0):
             # if either endpoint of the first line is within the second segment
             # we need to check both x,y since lines could be vertical or horizontal
-            if(x3 <= x1 <= x4 or x3 <= x2 <= x4):
+            if((x3 <= x1 <= x4 and y3 <= y1 <= y4) or (x3 <= x2 <= x4 and y3 <= y2 <= y4)):
                 return True
             else:
                 return False
@@ -219,10 +215,8 @@ def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
     
 # meat of the recursion, we need to specify what resolution each ipix has
 # fullquerywrap(-65,5,90,15,2)
-# expect nsidemin = 2: [0, 12, 17, 18, 19, 20, 23, 29]
-# expect nsidemin = 4: [0, 1, 2, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 80, 83, 91, 92, 94, 95, 117, 119, 69, 70, 89, 90]
-#                      [0, 1, 2, 48, 49, 50, 71, 73, 74, 75, 76, 77, 78, 80, 83, 91, 92, 94, 95, 117, 119, 69, 70, 89, 90]
-# actual: 119,117,48,49,50,73,74,75,76,77,78,69,70,71,0,1,2,89,90,91,92,94 (80,83,95)
+# expect nsidemin = 2: [0, 12, 17, 18, 19, 22, 23, 29]
+# expect nsidemin = 4: [0, 1, 2, 48, 49, 50, 71, 73, 74, 75, 76, 77, 78, 91, 92, 94, 117, 119, 69, 70, 89, 90]
 def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore):
     print intersecting
     print dividenomore
