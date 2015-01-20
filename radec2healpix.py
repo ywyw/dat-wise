@@ -52,8 +52,7 @@ def hash2tuple():
 def tuple2ipix(binnum,remainder,nside):
     # write the reverse function
     
-# function for finding the resolution of
-
+    
 # checking if a query is "valid" # note: can handle wraparound later
 def isvalidbboxquery(ramin,decmin,ramax,decmax):
     if not (-180 <= ramin <= 180) or not (-180 <= ramax <= 180):
