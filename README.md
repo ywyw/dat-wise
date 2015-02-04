@@ -45,3 +45,4 @@ WIP: hashing for queries
 WIP: reverse functions
 WIP: display resolution along with ipix
 WIP: latlong vs radec
+WIP: settle ring vs nest
