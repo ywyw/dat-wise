@@ -56,6 +56,12 @@ For a query returning minimum resolution healpix:
 fullquerywrap(ramin,decmin,ramax,decmax,nsidemin)
 ```
 
+## Breakdown of bounding box query cases:
+![Case one](https://cloud.githubusercontent.com/assets/7133238/6182724/dbb15d46-b2fe-11e4-9aa8-213ab5461dec.png)
+![Case two](https://cloud.githubusercontent.com/assets/7133238/6182725/dbb46130-b2fe-11e4-82d8-c10785cb1375.png)
+![Case three](https://cloud.githubusercontent.com/assets/7133238/6182726/dbb63690-b2fe-11e4-8cc0-0f839f74c476.png)
+
+
 ## WIP
 
 - hashing for queries
