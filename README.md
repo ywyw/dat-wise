@@ -57,10 +57,13 @@ fullquerywrap(ramin,decmin,ramax,decmax,nsidemin)
 ```
 
 ## Breakdown of bounding box query cases:
+All possible intersections of a rectangular query against a curved Healpix are as follows:
 ![Case one](https://cloud.githubusercontent.com/assets/7133238/6182724/dbb15d46-b2fe-11e4-9aa8-213ab5461dec.png "Healpix corner in bbox")
+This case is handled by testing each Healpix corner and seeing if it's within range of the bounding box, which is easy
 ![Case two](https://cloud.githubusercontent.com/assets/7133238/6182725/dbb46130-b2fe-11e4-82d8-c10785cb1375.png "Bbox corner in healpix")
+This case is done by the radec2healpix function, which tests each corner of the bbox and sees if it lands within the Healpix in question, also straightforward
 ![Case three](https://cloud.githubusercontent.com/assets/7133238/6182726/dbb63690-b2fe-11e4-8cc0-0f839f74c476.png "Bbox edge intersects diagonals of Healpix")
-
+This is an edge case that took some consideration, when no corners of either fall within the other, this is a fairly fast and easy way to avoid complex math and dealing with curved Healpix edges
 
 ## WIP
 
