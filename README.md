@@ -58,15 +58,9 @@ fullquerywrap(ramin,decmin,ramax,decmax,nsidemin)
 
 ## WIP
 
-<<<<<<< HEAD
 WIP: hashing for queries
 WIP: reverse functions
 WIP: display resolution along with ipix
 WIP: latlong vs radec
 WIP: settle ring vs nest
-=======
-- hashing for queries
-- reverse functions
-- display resolution along with ipix
-- latlong vs radec
->>>>>>> 78fb66c53f5a230eafa1d6a91fdb0f99819975f9
+
