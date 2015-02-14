@@ -194,7 +194,7 @@ def simplequery(ramin,decmin,ramax,decmax,nside=1):
         print "invalid query"
     for ipix in range(pixels):
         if (bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside)):
-            intersecting.append(ipix)
+            intersecting.append((ipix, 1)) #return tuple of (ipix,nside)
     return intersecting
     
 # recursive function that selects healpix of finer resolutions until minimum
@@ -203,11 +203,11 @@ def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
     intersecting = simplequery(ramin,decmin,ramax,decmax) # start with 12 pixels, nside =1
     dividenomore = []
     # for each pixel put in list intersecting or dividenomore
-    for pixel in intersecting:
+    for (pixel,nside) in intersecting:
         corners = bboxcorners(pixel,1)
         if (healpixinsidebbox(ramin,decmin,ramax,decmax,corners)):
-            intersecting.remove(pixel)
-            dividenomore.append(ipix)
+            intersecting.remove((pixel, nside))
+            dividenomore.append((ipix, nside))
     print intersecting
     print dividenomore
     return fullquery(ramin,decmin,ramax,decmax,nsidemin,1,intersecting,dividenomore)
@@ -227,24 +227,24 @@ def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenom
         # for every pixel in intersecting, divide into 4 and test each one
         addon = []
         todelete = []
-        for pixel in intersecting:
-            print "intersecting: ",intersecting
-            pixelchildren = getchildrennest(pixel,nsidecur)
+        for (pixel, nside) in intersecting:
+            print "intersecting: ", intersecting
+            pixelchildren = getchildrennest(pixel,nside)
             for child in pixelchildren:
                 print "parent pixel #", pixel, " child #", child
-                if healpixinsidebbox(ramin,decmin,ramax,decmax,bboxcorners(child,nsidecur)):
+                if healpixinsidebbox(ramin,decmin,ramax,decmax,bboxcorners(child,nside*2)):
                     print "this will not divide further"
-                    dividenomore.append(child)
+                    dividenomore.append((child, nside * 2)) # the child will be the next finer resolution
                 else:
-                    if bboxpixintersect(ramin,decmin,ramax,decmax,child,nsidecur):
+                    if bboxpixintersect(ramin,decmin,ramax,decmax,child,nside*2):
                         print "adding child", child
-                        print "corners for child are:", map(radec2latlong,bboxcorners(child,nsidecur))
-                        addon.append(child)
-            print "going to remove ", pixel
-            todelete.append(pixel)
+                        print "corners for child are:", map(radec2latlong,bboxcorners(child,nside*2))
+                        addon.append((child, nside * 2)) 
+            print "going to remove ", pixel, nside
+            todelete.append((pixel, nside))
         intersecting = intersecting + addon
-        for pixel in todelete:
-            intersecting.remove(pixel)
+        for (pixel, nside) in todelete:
+            intersecting.remove((pixel, nside))
         return fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore)
 
 
