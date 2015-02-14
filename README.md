@@ -75,7 +75,6 @@ This is an edge case that took some consideration, when no corners of either fal
 
 - hashing for queries
 - reverse functions
-- display resolution along with ipix
 - latlong vs radec
 - settle ring vs nest
 
