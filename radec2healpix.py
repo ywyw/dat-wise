@@ -32,7 +32,7 @@ def ipix2tuple(pixelring,nside):
 
 def tuple2hash(binnum,remainder):
     return str(hex(binnum)[2:])+str(hex(remainder)[2:])
-
+x
 # ra/dec to healpix one function
 def radec2healpix(ra,dec,nside):
     (theta,phi) = radec2polar(ra,dec)
@@ -54,8 +54,8 @@ def tuple2ipix(binnum,remainder,nside):
     
     
 # checking if a query is "valid" # note: can handle wraparound later
-def isvalidbboxquery(ramin,decmin,ramax,decmax):
-    if not (-180 <= ramin <= 180) or not (-180 <= ramax <= 180):
+def isvalidbboxquery(ramin,decmin,ramax,decmax): # new
+    if not (0 <= ramin <= 360) or not (0 <= ramax <= 360):
         return False
     if not (-90 <= decmin <= 90) or not (-90 <= decmax <= 90):
         return False
@@ -81,7 +81,6 @@ def query(ramin,decmin,ramax,decmax):
 # healpix completely contained in bbox, don't divide further
 def healpixinsidebbox(ramin,decmin,ramax,decmax,corners):
     for corner in corners:
-        #print corner
         if (ramin <= corner[0] <= ramax and decmin <= corner[1] <= decmax):
             return True
         else:
@@ -95,7 +94,7 @@ def centerinbbox(ramin,decmin,ramax,decmax,ipix,nside):
     print lat, lon
     print ramin, ramax
     print decmin, decmax
-    if (ramin <= lat <= ramax and decmin <= lon <= decmax):
+    if (ramin <= racenter <= ramax and decmin <= deccenter <= decmax): #new
         return True
     return False
     
@@ -114,7 +113,7 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
         return True
     # next test healpix corners
     corners = bboxcorners(ipix,nside)
-    corners = map(radec2latlong, corners)
+    #corners = map(radec2latlong, corners) #new
     print corners
     for corner in corners:
         (ra,dec) = corner
@@ -134,15 +133,15 @@ def bboxpixintersect(ramin,decmin,ramax,decmax,ipix,nside):
     return False
     
 def radec2latlong(radecpair):
-    (ra,dec) = radecpair
+    (ra, dec) = radecpair
     if (ra > 180):
         ra = ra - 360
     return (ra,dec)
 
 def latlon2radec(latlonpair):
     (lat, lon) = latlonpair
-    if (lon < 0):
-        lon = lon + 360
+    if (lat < 0):
+        lat = lat + 360
     return (lat, lon)
     
 def bboxintersectline(ramin,decmin,ramax,decmax,line):
@@ -150,7 +149,7 @@ def bboxintersectline(ramin,decmin,ramax,decmax,line):
     bboxedges = [((ramin,decmin),(ramin,decmax)),((ramin,decmin),(ramax,decmin)),
     ((ramax,decmax),(ramax,decmin)),((ramax,decmax),(ramin,decmax))]
     for edge in bboxedges:
-        if lineintersectline(edge,line):
+        if lineintersectline(edge, line):
             return True
     return False
 
@@ -214,8 +213,7 @@ def fullquerywrap(ramin,decmin,ramax,decmax,nsidemin):
     
 # meat of the recursion, we need to specify what resolution each ipix has
 # fullquerywrap(-65,5,90,15,2)
-# expect nsidemin = 2: [0, 12, 17, 18, 19, 22, 23, 29]
-# expect nsidemin = 4: [0, 1, 2, 48, 49, 50, 71, 73, 74, 75, 76, 77, 78, 91, 92, 94, 117, 119, 69, 70, 89, 90]
+
 def fullquery(ramin,decmin,ramax,decmax,nsidemin,nsidecur,intersecting,dividenomore):
     print intersecting
     print dividenomore
@@ -259,3 +257,20 @@ def getchildren(ipix,nside):
 def getchildrennest(ipix,nside):
     children = [ipix*4, ipix*4+1, ipix*4+2, ipix*4+3]
     return children
+
+# 
+# [(12, 2), (18, 2), (19, 2), (29, 2)]
+# [(0, 2), (17, 2), (19, 2), (22, 2), (23, 2)]
+
+# [(0, 4), (1, 4), (2, 4), (71, 4), (76, 4), (77, 4), (91, 4), (92, 4), (94, 4), (69, 4), (70, 4), (89, 4), (90, 4)]
+# [(48, 4), (49, 4), (50, 4), (75, 4), (76, 4), (78, 4), (119, 4), (73, 4), (74, 4), (117, 4)]
+
+def testfullquery():
+    assert(fullquerywrap(0,5,90,15,2) == [(0, 2), (17, 2), (19, 2), (22, 2), (23, 2)])
+    #assert(fullquerywrap(-65,5,90,15,2) == [(0, 2), (12, 2), (17, 2), (18, 2), (19, 2), (22, 2), (23, 2), (29, 2)])
+    assert(fullquerywrap(0,5,90,15,4) == [(0, 4), (1, 4), (2, 4), (71, 4), (76, 4), (77, 4), (91, 4), (92, 4), (94, 4), (69, 4), (70, 4), (89, 4), (90, 4)])
+    #assert(fullquerywrap(-65,5,90,15,4) == [(0, 4), (1, 4), (2, 4), (48, 4), (49, 4), (50, 4), (71, 4), 
+    #(73, 4), (74, 4), (75, 4), (76, 4), (77, 4), (78, 4), (91, 4), (92, 4), (94, 4), (117, 4), (119, 4), 
+    #(69, 4), (70, 4), (89, 4), (90, 4)])
+    
+# write tests for pixel/ radec / latlong conversions

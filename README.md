@@ -71,10 +71,13 @@ This case is done by the radec2healpix function, which tests each corner of the 
 
 This is an edge case that took some consideration, when no corners of either fall within the other, this is a fairly fast and easy way to avoid complex math and dealing with curved Healpix edges
 
+A fourth case occurs when the Healpix is entirely inside the bounding box, and here, we decide not to divide this pixel further in the recursive set algorithm.
+
 ## WIP
 
 - hashing for queries
 - reverse functions
-- latlong vs radec
-- settle ring vs nest
-
+- latlong vs radec: radec is 0 -> 360 and then modulus, latlong is -180 -> 180, change query valid func
+- change queries to be in radec format
+- settle ring vs nest: read docs
+- write a few tests
